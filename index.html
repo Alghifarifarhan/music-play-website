@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pemutar Lirik Lagu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="music.png" />
+  <style>
+    /* General Styling */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 1s ease;
+    }
+
+    /* Background Canvas */
+    #background-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Start Screen */
+    #start-screen {
+      text-align: center;
+      animation: fadeIn 1.2s ease-in-out;
+    }
+
+    #play-button {
+      font-size: 24px;
+      padding: 18px 50px;
+      border-radius: 50px;
+      border: none;
+      background: linear-gradient(45deg, #00d4ff, #7b2ff7);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    #play-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px rgba(123, 47, 247, 0.7);
+    }
+
+    /* Lyric Container */
+    #lyric-container {
+      display: none;
+      text-align: center;
+      max-width: 90%;
+      padding: 20px;
+      font-size: 2em;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+
+    #lyric-container.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      #play-button { font-size: 18px; padding: 14px 40px; }
+      #lyric-container { font-size: 1.4em; }
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="song" loop>
+    <source src="your-music.mp3" type="audio/mpeg">
+    Browser Anda tidak mendukung elemen audio.
+  </audio>
+
+  <canvas id="background-canvas"></canvas>
+
+  <div id="start-screen">
+    <button id="play-button">🎵 Mulai</button>
+  </div>
+
+  <div id="lyric-container">
+    <p id="lyric-text"></p>
+  </div>
+
+  <script>
+    const startScreen = document.getElementById('start-screen');
+    const playButton = document.getElementById('play-button');
+    const lyricContainer = document.getElementById('lyric-container');
+    const lyricText = document.getElementById('lyric-text');
+    const song = document.getElementById('song');
+    const canvas = document.getElementById('background-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const lyrics = [
+    
+    <!-- "time = real-time beat in music" -->
+
+      { text: "lyric verse 1..", emoji: "😠👎", time: 1 },
+      { text: "lyric verse 2..", emoji: "😞🫷", time: 4 },
+      { text: "lyric verse 3..", emoji: "🎉👑", time: 8.5 },
+      { text: "lyric verse 4..", emoji: "🥳💪", time: 11.5 },
+      { text: "lyric verse 5..", emoji: "😞🤷‍♂️", time: 15.5 },
+      { text: "lyric verse 6..", emoji: "😒💔", time: 19 },
+      { text: "lyric verse 7..", emoji: "👨‍🦽🤷‍♂️", time: 23 },
+      { text: "lyric verse 8..", emoji: "💨🤷‍♂️", time: 25.5 },
+      { text: "", emoji: "", time: 30 }
+    ];
+    let currentLyricIndex = -1;
+
+    // Canvas setup
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = Array.from({ length: 100 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      dx: Math.random() - 0.5,
+      dy: Math.random() - 0.5,
+    }));
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        p.x += p.dx;
+        p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+      });
+    }
+
+    // Dynamic gradient background
+    let hue = 0;
+    function animateBackground() {
+      hue = (hue + 1) % 360;
+      document.body.style.background = `linear-gradient(135deg, hsl(${hue}, 80%, 40%), hsl(${(hue + 60) % 360}, 80%, 40%))`;
+      drawParticles();
+      requestAnimationFrame(animateBackground);
+    }
+
+    function startExperience() {
+      startScreen.style.display = 'none';
+      lyricContainer.style.display = 'block';
+      song.play();
+      animateBackground();
+    }
+
+    playButton.addEventListener('click', startExperience);
+
+    song.addEventListener('timeupdate', () => {
+      const currentTime = song.currentTime;
+      const nextIndex = lyrics.findIndex(lyric => currentTime < lyric.time) - 1;
+      if (nextIndex !== currentLyricIndex && nextIndex >= 0) {
+        currentLyricIndex = nextIndex;
+        lyricContainer.classList.remove('visible');
+        setTimeout(() => {
+          lyricText.innerHTML = `${lyrics[currentLyricIndex].text} ${lyrics[currentLyricIndex].emoji}`;
+          lyricContainer.classList.add('visible');
+        }, 200);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
